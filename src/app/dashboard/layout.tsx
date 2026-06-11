@@ -1,18 +1,15 @@
-// Server Component layout — like a NestJS Guard + interceptor combined; runs before every dashboard route
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { logout } from '@/app/auth/actions'
-import Link from 'next/link'
+import { DashboardNav } from '@/components/DashboardNav'
+import { Calendar, LogOut } from 'lucide-react'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
 
-  // getUser() — server-validated; equivalent to NestJS JwtAuthGuard extracting user from token
+  // getUser() validates JWT server-side — equivalent to NestJS JwtAuthGuard
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    redirect('/login')
-  }
+  if (!user) redirect('/login')
 
   const { data: business } = await supabase
     .from('businesses')
@@ -20,55 +17,61 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq('owner_id', user.id)
     .single()
 
-  // No business row = onboarding incomplete; redirect instead of showing blank dashboard
-  if (!business) {
-    redirect('/onboarding')
-  }
+  if (!business) redirect('/onboarding')
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top nav */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <span className="font-bold text-gray-900">{business.name}</span>
-            <nav className="hidden sm:flex items-center gap-1">
-              <Link href="/dashboard" className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-                Overview
-              </Link>
-              <Link href="/dashboard/branches" className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-                Branches
-              </Link>
-              <Link href="/dashboard/staff" className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-                Staff
-              </Link>
-              <Link href="/dashboard/services" className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-                Services
-              </Link>
-              <Link href="/dashboard/availability" className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
-                Availability
-              </Link>
-            </nav>
-          </div>
+    <div className="min-h-screen bg-stone-50">
+      <header className="bg-white border-b border-stone-200 shadow-sm sticky top-0 z-10">
+        <div className="px-6">
+          <div className="h-16 flex items-center gap-3">
 
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline-block text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-500 font-medium capitalize">
-              {business.subscription_tier}
-            </span>
-            {/* Server Action in form — logout can't be called via onClick in a Server Component */}
-            <form action={logout}>
+            {/* Product wordmark */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Calendar from lucide-react — used directly in Server Component JSX, not passed as prop */}
+              <div className="w-8 h-8 bg-ember-600 rounded-lg flex items-center justify-center shrink-0">
+                <Calendar size={16} className="text-white" strokeWidth={2} />
+              </div>
+              <span className="font-semibold text-base text-stone-900 tracking-tight">BookFlow</span>
+            </div>
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-stone-200 shrink-0" />
+
+            {/* Workspace name + tier badge */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="font-medium text-sm text-stone-700 max-w-[140px] truncate">
+                {business.name}
+              </span>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                  business.subscription_tier === 'pro'
+                    ? 'bg-ember-100 text-ember-700'
+                    : 'bg-stone-100 text-stone-500'
+                }`}
+              >
+                {business.subscription_tier === 'pro' ? 'Pro' : 'Free'}
+              </span>
+            </div>
+
+            {/* Nav — client component owns its own icons (can't pass icon functions as props from Server) */}
+            <DashboardNav />
+
+            {/* Logout — ghost style */}
+            <form action={logout} className="ml-auto shrink-0">
               <button
                 type="submit"
-                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors"
               >
-                Logout
+                <LogOut size={15} />
+                <span className="hidden sm:inline font-medium">Logout</span>
               </button>
             </form>
+
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-8">
         {children}
       </main>
     </div>

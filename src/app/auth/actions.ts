@@ -6,9 +6,16 @@ import { redirect } from 'next/navigation'
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
+  const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
+
+  if (password !== confirmPassword) {
+    redirect('/signup?error=' + encodeURIComponent('Passwords do not match'))
+  }
+
   const { error } = await supabase.auth.signUp({
     email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    password,
   })
 
   if (error) {
@@ -67,5 +74,5 @@ export async function resetPassword(formData: FormData) {
     redirect('/reset-password?error=' + encodeURIComponent(error.message))
   }
 
-  redirect('/login?error=' + encodeURIComponent('Password updated — please sign in'))
+  redirect('/login?message=' + encodeURIComponent('Password updated — please sign in'))
 }

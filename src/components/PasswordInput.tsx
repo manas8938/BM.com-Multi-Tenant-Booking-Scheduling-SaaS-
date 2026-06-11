@@ -1,5 +1,5 @@
 'use client'
-// 'use client' needed for useState — unlike NestJS where all code is server-side, Next.js splits at component boundaries
+// 'use client' required for useState — unlike NestJS where all code runs server-side
 import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -22,15 +22,17 @@ export function PasswordInput({ name, placeholder, minLength, autoComplete }: Pa
         minLength={minLength}
         autoComplete={autoComplete}
         placeholder={placeholder}
-        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+        className="w-full px-4 py-3 pr-11 border border-stone-200 rounded-xl text-sm text-stone-900 placeholder:text-stone-400 bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-stone-900 focus:border-transparent transition-colors"
       />
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+        tabIndex={-1}
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 transition-colors rounded"
         aria-label={show ? 'Hide password' : 'Show password'}
       >
-        {show ? <EyeOff size={16} /> : <Eye size={16} />}
+        {/* Eye = visible (click to hide), EyeOff = hidden (click to show) */}
+        {show ? <Eye size={16} strokeWidth={2} /> : <EyeOff size={16} strokeWidth={2} />}
       </button>
     </div>
   )
