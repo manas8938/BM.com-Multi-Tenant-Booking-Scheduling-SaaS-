@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Check, Clock, ChevronLeft, Loader2 } from 'lucide-react'
 import { fetchSlots, createBooking, type BookingResult } from '@/app/[businessSlug]/actions'
 import type { TimeSlot } from '@/lib/slots'
+import { createClient } from '@/lib/supabase/client'
 
 interface Service {
   id: string
@@ -50,6 +51,33 @@ export function BookingFlow({
       setLoadingSlots(false)
     })
   }, [member, service, date])
+
+  useEffect(() => {
+    if (step !== 'slot' || !member || !date) return
+
+    const supabase = createClient()
+    // Like a WebSocket room subscription, but Supabase manages the realtime connection (no manual socket.io setup needed).
+    const channel = supabase
+      .channel(`bookings-${member.id}-${date}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bookings', filter: `staff_id=eq.${member.id}` },
+        (payload) => {
+          const startTime = payload.new.start_time as string | undefined
+          if (!startTime) return
+
+          const bookingDate = startTime.split('T')[0]
+          if (bookingDate !== date) return
+
+          setSlots((prev) => prev.filter((s) => s.start !== startTime))
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [step, member, date])
 
   const next7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date()
