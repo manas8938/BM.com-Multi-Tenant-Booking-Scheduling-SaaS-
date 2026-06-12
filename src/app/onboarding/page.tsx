@@ -1,4 +1,5 @@
 import { createBusiness } from './actions'
+import { Calendar } from 'lucide-react'
 
 export default function OnboardingPage({
   searchParams,
@@ -6,65 +7,75 @@ export default function OnboardingPage({
   searchParams: { error?: string }
 }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
-        <div className="mb-8">
-          <div className="w-10 h-10 bg-ember-600 rounded-xl flex items-center justify-center mb-4">
-            <span className="text-white font-bold text-lg">B</span>
+    <div className="min-h-screen bg-ink-950 flex items-center justify-center px-4 relative overflow-hidden">
+      <div className="absolute -top-40 -right-40 w-[36rem] h-[36rem] bg-ember-600/20 rounded-full blur-3xl" />
+      <div className="absolute -bottom-40 -left-40 w-[32rem] h-[32rem] bg-gold-500/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-mint-500/5 rounded-full blur-3xl" />
+
+      <div className="relative w-full max-w-md">
+        <div className="flex items-center gap-2.5 mb-8 justify-center">
+          <div className="w-9 h-9 bg-ember-600 rounded-lg flex items-center justify-center shrink-0">
+            <Calendar size={18} className="text-white" strokeWidth={2} />
           </div>
-          <h1 className="text-2xl font-bold text-stone-900">Set up your business</h1>
-          <p className="text-sm text-stone-500 mt-1">This takes 30 seconds</p>
+          <span className="font-bold text-white text-lg tracking-tight">BM.com</span>
         </div>
 
-        {searchParams.error && (
-          <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
-            {searchParams.error}
-          </div>
-        )}
-
-        <form action={createBusiness} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-stone-700 mb-1">
-              Business name
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-              placeholder="Anas Clinic"
-            />
+        <div className="bg-ink-900/80 backdrop-blur-sm rounded-2xl border border-ink-700 p-8 shadow-2xl shadow-black/40">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Set up your business</h1>
+            <p className="text-sm text-stone-400 mt-1">This takes 30 seconds</p>
           </div>
 
-          <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-stone-700 mb-1">
-              Booking URL slug
-            </label>
-            <div className="flex items-center border border-stone-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-black focus-within:border-transparent">
-              <span className="px-3 py-2 bg-stone-50 text-stone-400 text-sm border-r border-stone-300 whitespace-nowrap">
-                bookflow.app/
-              </span>
+          {searchParams.error && (
+            <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-sm text-red-400">
+              {searchParams.error}
+            </div>
+          )}
+
+          <form action={createBusiness} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-stone-300 mb-1.5">
+                Business name
+              </label>
               <input
-                id="slug"
-                name="slug"
+                id="name"
+                name="name"
                 type="text"
                 required
-                pattern="[a-zA-Z0-9-]+"
-                className="flex-1 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none"
-                placeholder="anas-clinic"
+                className="w-full px-4 py-3 border border-ink-700 rounded-xl text-sm text-white placeholder:text-stone-500 bg-ink-950 focus:outline-none focus:ring-2 focus:ring-ember-500/30 focus:border-ember-500 transition-colors"
+                placeholder="Anas Clinic"
               />
             </div>
-            <p className="mt-1 text-xs text-stone-400">Letters, numbers, hyphens only</p>
-          </div>
 
-          <button
-            type="submit"
-            className="w-full py-2.5 px-4 bg-ember-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-ember-700 active:scale-[0.98] transition-all mt-2"
-          >
-            Create business →
-          </button>
-        </form>
+            <div>
+              <label htmlFor="slug" className="block text-sm font-medium text-stone-300 mb-1.5">
+                Booking URL slug
+              </label>
+              <div className="flex items-center border border-ink-700 rounded-xl overflow-hidden bg-ink-950 focus-within:ring-2 focus-within:ring-ember-500/30 focus-within:border-ember-500 transition-colors">
+                <span className="px-4 py-3 bg-ink-900 text-stone-500 text-sm border-r border-ink-700 whitespace-nowrap">
+                  bm.com/
+                </span>
+                <input
+                  id="slug"
+                  name="slug"
+                  type="text"
+                  required
+                  pattern="[a-zA-Z0-9-]+"
+                  className="flex-1 px-4 py-3 text-sm text-white placeholder:text-stone-500 bg-transparent focus:outline-none"
+                  placeholder="anas-clinic"
+                />
+              </div>
+              <p className="mt-1.5 text-xs text-stone-500">Letters, numbers, hyphens only</p>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-2.5 px-4 bg-ember-600 text-white text-sm font-medium rounded-xl shadow-sm hover:bg-ember-700 active:scale-[0.98] transition-all mt-2"
+            >
+              Create business →
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
