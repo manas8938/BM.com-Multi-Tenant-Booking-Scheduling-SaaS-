@@ -41,6 +41,7 @@ export function BookingFlow({
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [cancelToken, setCancelToken] = useState<string | null>(null)
 
   useEffect(() => {
     if (!member || !service || !date) return
@@ -124,6 +125,7 @@ export function BookingFlow({
       return
     }
 
+    setCancelToken(result.cancelToken)
     setStep('success')
   }
 
@@ -136,13 +138,18 @@ export function BookingFlow({
         </div>
         <h2 className="text-xl font-bold text-stone-900 mb-1">Booking confirmed</h2>
         <p className="text-sm text-stone-500 mb-6">
-          A confirmation email is on its way to {email}.
+          Save this confirmation for your records.
         </p>
         <div className="bg-stone-50 rounded-lg p-4 text-left text-sm space-y-1.5">
           <p><span className="text-stone-400">Service:</span> <span className="font-medium text-stone-900">{service?.name}</span></p>
           <p><span className="text-stone-400">With:</span> <span className="font-medium text-stone-900">{member?.name}</span></p>
           <p><span className="text-stone-400">When:</span> <span className="font-medium text-stone-900">{slot && new Date(slot.start).toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span></p>
         </div>
+        {cancelToken && (
+          <a href={`/cancel/${cancelToken}`} className="inline-block mt-4 text-sm text-stone-400 hover:text-ember-600 underline underline-offset-2 transition-colors">
+            Need to cancel? Click here
+          </a>
+        )}
       </div>
     )
   }

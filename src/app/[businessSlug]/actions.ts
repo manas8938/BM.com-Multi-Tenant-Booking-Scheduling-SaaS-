@@ -12,7 +12,7 @@ export async function fetchSlots(
 }
 
 export type BookingResult =
-  | { success: true; bookingId: string }
+  | { success: true; bookingId: string; cancelToken: string }
   | { success: false; error: string }
 
 export async function createBooking(input: {
@@ -53,7 +53,7 @@ export async function createBooking(input: {
       customer_email: input.customerEmail,
       status: 'confirmed',
     })
-    .select('id')
+    .select('id, cancel_token')
     .single()
 
   if (error) {
@@ -63,5 +63,5 @@ export async function createBooking(input: {
     return { success: false, error: 'Something went wrong. Please try again.' }
   }
 
-  return { success: true, bookingId: data.id }
+  return { success: true, bookingId: data.id, cancelToken: data.cancel_token }
 }
