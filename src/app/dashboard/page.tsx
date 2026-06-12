@@ -5,9 +5,8 @@ import Link from 'next/link'
 export default async function DashboardPage() {
   const { supabase, business } = await requireBusiness()
 
-  // compute current week's Mon 00:00 -> next Mon 00:00 (like a date-range filter in a NestJS query)
   const now = new Date()
-  const day = now.getDay() // 0=Sun..6=Sat
+  const day = now.getDay()
   const diffToMonday = day === 0 ? 6 : day - 1
   const startOfWeek = new Date(now)
   startOfWeek.setDate(now.getDate() - diffToMonday)
@@ -42,22 +41,22 @@ export default async function DashboardPage() {
   ])
 
   const stats = [
-    { label: 'Total Bookings', value: bookingCount ?? 0, icon: Calendar, sub: 'all time', bg: 'bg-ember-50', text: 'text-ember-600', border: 'border-t-ember-500' },
-    { label: 'This Week', value: weekCount ?? 0, icon: TrendingUp, sub: 'Mon - Sun', bg: 'bg-mint-50', text: 'text-mint-600', border: 'border-t-mint-500' },
-    { label: 'Active Staff', value: staffCount ?? 0, icon: Users, sub: 'team members', bg: 'bg-ink-50', text: 'text-ink-900', border: 'border-t-ink-900' },
+    { label: 'Total Bookings', value: bookingCount ?? 0, icon: Calendar, sub: 'all time', bg: 'bg-ember-50 dark:bg-ember-500/20', text: 'text-ember-600 dark:text-ember-400', border: 'border-t-ember-500' },
+    { label: 'This Week', value: weekCount ?? 0, icon: TrendingUp, sub: 'Mon - Sun', bg: 'bg-mint-50 dark:bg-mint-500/20', text: 'text-mint-600 dark:text-mint-400', border: 'border-t-mint-500' },
+    { label: 'Active Staff', value: staffCount ?? 0, icon: Users, sub: 'team members', bg: 'bg-ink-50 dark:bg-white/10', text: 'text-ink-900 dark:text-stone-200', border: 'border-t-ink-900 dark:border-t-stone-400' },
   ]
 
   const manage = [
-    { href: '/dashboard/branches', label: 'Branches', icon: GitBranch, count: branchCount ?? 0, desc: 'Manage locations', bg: 'bg-ember-50', text: 'text-ember-600' },
-    { href: '/dashboard/staff', label: 'Staff', icon: Users, count: staffCount ?? 0, desc: 'Manage team members', bg: 'bg-mint-50', text: 'text-mint-600' },
-    { href: '/dashboard/services', label: 'Services', icon: Scissors, count: serviceCount ?? 0, desc: 'Pricing & duration', bg: 'bg-ink-50', text: 'text-ink-900' },
-    { href: '/dashboard/availability', label: 'Availability', icon: Clock, count: 0, desc: 'Weekly schedules', bg: 'bg-gold-50', text: 'text-gold-600' },
+    { href: '/dashboard/branches', label: 'Branches', icon: GitBranch, count: branchCount ?? 0, desc: 'Manage locations', bg: 'bg-ember-50 dark:bg-ember-500/20', text: 'text-ember-600 dark:text-ember-400' },
+    { href: '/dashboard/staff', label: 'Staff', icon: Users, count: staffCount ?? 0, desc: 'Manage team members', bg: 'bg-mint-50 dark:bg-mint-500/20', text: 'text-mint-600 dark:text-mint-400' },
+    { href: '/dashboard/services', label: 'Services', icon: Scissors, count: serviceCount ?? 0, desc: 'Pricing & duration', bg: 'bg-ink-50 dark:bg-white/10', text: 'text-ink-900 dark:text-stone-200' },
+    { href: '/dashboard/availability', label: 'Availability', icon: Clock, count: 0, desc: 'Weekly schedules', bg: 'bg-gold-50 dark:bg-gold-500/20', text: 'text-gold-600 dark:text-gold-400' },
   ] as const
 
   function statusStyles(status: string) {
-    if (status === 'confirmed') return 'bg-mint-50 text-mint-600'
-    if (status === 'cancelled') return 'bg-stone-100 text-stone-500'
-    return 'bg-gold-50 text-gold-600'
+    if (status === 'confirmed') return 'bg-mint-50 dark:bg-mint-500/20 text-mint-600 dark:text-mint-400'
+    if (status === 'cancelled') return 'bg-stone-100 dark:bg-white/10 text-stone-500 dark:text-stone-400'
+    return 'bg-gold-50 dark:bg-gold-500/20 text-gold-600 dark:text-gold-400'
   }
 
   function formatDateTime(iso: string) {
@@ -69,13 +68,13 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div className="mb-8 animate-fadeInUp">
-        <h1 className="text-2xl font-bold text-stone-900">Overview</h1>
-        <p className="text-sm text-stone-500 mt-1">
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-white">Overview</h1>
+        <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
           Public booking page:{' '}
           <Link
             href={`/${business.slug}`}
             target="_blank"
-            className="text-ember-600 hover:underline underline-offset-2 font-medium"
+            className="text-ember-600 dark:text-ember-400 hover:underline underline-offset-2 font-medium"
           >
             /{business.slug}
           </Link>
@@ -87,16 +86,16 @@ export default async function DashboardPage() {
         {stats.map((s) => (
           <div
             key={s.label}
-            className={`bg-white rounded-xl border border-stone-200 border-t-[3px] ${s.border} shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+            className={`bg-white dark:bg-ink-800 rounded-xl border border-stone-200 dark:border-ink-700 border-t-[3px] ${s.border} shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
           >
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{s.label}</span>
+              <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide">{s.label}</span>
               <div className={`w-8 h-8 ${s.bg} rounded-lg flex items-center justify-center transition-transform duration-200 hover:scale-110`}>
                 <s.icon size={15} className={s.text} />
               </div>
             </div>
-            <p className="text-4xl font-bold text-stone-900">{s.value}</p>
-            <p className="text-xs text-stone-400 mt-1">{s.sub}</p>
+            <p className="text-4xl font-bold text-stone-900 dark:text-white">{s.value}</p>
+            <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">{s.sub}</p>
           </div>
         ))}
       </div>
@@ -104,25 +103,25 @@ export default async function DashboardPage() {
       {/* Recent Bookings */}
       <div className="animate-fadeInUp">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-widest">Recent Bookings</h2>
-          <Link href="/dashboard/bookings" className="text-sm font-medium text-ember-600 hover:underline">
+          <h2 className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest">Recent Bookings</h2>
+          <Link href="/dashboard/bookings" className="text-sm font-medium text-ember-600 dark:text-ember-400 hover:underline">
             View all →
           </Link>
         </div>
-        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-ink-800 rounded-xl border border-stone-200 dark:border-ink-700 shadow-sm overflow-hidden">
           {!recentBookings || recentBookings.length === 0 ? (
-            <div className="p-8 text-center text-sm text-stone-400">No bookings yet</div>
+            <div className="p-8 text-center text-sm text-stone-400 dark:text-stone-500">No bookings yet</div>
           ) : (
             <table className="w-full text-sm">
               <tbody>
                 {recentBookings.map((b: { id: string; customer_name: string; start_time: string; status: string; services: { name: string }[]; staff: { name: string }[] }) => (
-                  <tr key={b.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50 transition-colors">
+                  <tr key={b.id} className="border-b border-stone-100 dark:border-ink-700 last:border-0 hover:bg-stone-50 dark:hover:bg-white/5 transition-colors">
                     <td className="px-5 py-3.5">
-                      <p className="font-medium text-stone-900">{b.customer_name}</p>
+                      <p className="font-medium text-stone-900 dark:text-white">{b.customer_name}</p>
                     </td>
-                    <td className="px-5 py-3.5 text-stone-600">{b.services?.[0]?.name}</td>
-                    <td className="px-5 py-3.5 text-stone-600">{b.staff?.[0]?.name}</td>
-                    <td className="px-5 py-3.5 text-stone-600">{formatDateTime(b.start_time)}</td>
+                    <td className="px-5 py-3.5 text-stone-600 dark:text-stone-400">{b.services?.[0]?.name}</td>
+                    <td className="px-5 py-3.5 text-stone-600 dark:text-stone-400">{b.staff?.[0]?.name}</td>
+                    <td className="px-5 py-3.5 text-stone-600 dark:text-stone-400">{formatDateTime(b.start_time)}</td>
                     <td className="px-5 py-3.5">
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusStyles(b.status)}`}>
                         {b.status}
@@ -138,23 +137,23 @@ export default async function DashboardPage() {
 
       {/* Manage cards */}
       <div className="animate-fadeInUp">
-        <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-widest mb-4">Manage</h2>
+        <h2 className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-4">Manage</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {manage.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 hover:border-ember-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
+              className="bg-white dark:bg-ink-800 rounded-xl border border-stone-200 dark:border-ink-700 shadow-sm p-5 hover:border-ember-300 dark:hover:border-ember-500 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-11 h-11 ${item.bg} rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110`}>
                   <item.icon size={20} className={item.text} />
                 </div>
-                <ArrowRight size={15} className="text-stone-300 group-hover:text-ember-500 group-hover:translate-x-0.5 transition-all" />
+                <ArrowRight size={15} className="text-stone-300 dark:text-stone-600 group-hover:text-ember-500 group-hover:translate-x-0.5 transition-all" />
               </div>
-              <p className="font-semibold text-stone-900">{item.label}</p>
-              <p className="text-sm text-stone-500 mt-0.5">{item.desc}</p>
-              <p className="text-sm font-semibold text-ember-600 mt-3 hover:underline">
+              <p className="font-semibold text-stone-900 dark:text-white">{item.label}</p>
+              <p className="text-sm text-stone-500 dark:text-stone-400 mt-0.5">{item.desc}</p>
+              <p className="text-sm font-semibold text-ember-600 dark:text-ember-400 mt-3 hover:underline">
                 {item.count} total →
               </p>
             </Link>

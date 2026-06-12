@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -18,7 +19,7 @@ const config: Config = {
         ink: {
           50: "#EEF0F4", 100: "#D9DDE6", 200: "#B3BBCC", 300: "#8C99B3",
           400: "#667799", 500: "#4A5A7D", 600: "#364463", 700: "#29344D",
-          800: "#1F2738", 900: "#1B2333",
+          800: "#1F2738", 900: "#1B2333", 950: "#12172A",
         },
         gold: {
           50: "#FBF3D9", 100: "#F6E6B3", 200: "#EFD584", 300: "#E7C455",

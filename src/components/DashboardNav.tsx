@@ -35,11 +35,11 @@ export function DashboardNav() {
             href={href}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
               active
-                ? 'bg-ember-50 text-ember-700'
-                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                ? 'bg-ember-50 dark:bg-ember-500/20 text-ember-700 dark:text-ember-400'
+                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-white/10'
             }`}
           >
-            <Icon size={15} className={active ? 'text-ember-600' : 'text-stone-400'} />
+            <Icon size={15} className={active ? 'text-ember-600 dark:text-ember-400' : 'text-stone-400 dark:text-stone-500'} />
             <span>{label}</span>
           </Link>
         )
