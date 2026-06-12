@@ -1,27 +1,50 @@
 import { requireBusiness } from '@/lib/supabase/server-utils'
-import { Calendar, Users, GitBranch, Scissors, ArrowRight, TrendingUp, DollarSign, Clock } from 'lucide-react'
+import { Calendar, Users, GitBranch, Scissors, ArrowRight, TrendingUp, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
   const { supabase, business } = await requireBusiness()
+
+  // compute current week's Mon 00:00 -> next Mon 00:00 (like a date-range filter in a NestJS query)
+  const now = new Date()
+  const day = now.getDay() // 0=Sun..6=Sat
+  const diffToMonday = day === 0 ? 6 : day - 1
+  const startOfWeek = new Date(now)
+  startOfWeek.setDate(now.getDate() - diffToMonday)
+  startOfWeek.setHours(0, 0, 0, 0)
+  const endOfWeek = new Date(startOfWeek)
+  endOfWeek.setDate(startOfWeek.getDate() + 7)
 
   const [
     { count: branchCount },
     { count: staffCount },
     { count: serviceCount },
     { count: bookingCount },
+    { count: weekCount },
+    { data: recentBookings },
   ] = await Promise.all([
     supabase.from('branches').select('*', { count: 'exact', head: true }).eq('business_id', business.id),
     supabase.from('staff').select('*', { count: 'exact', head: true }).eq('business_id', business.id),
     supabase.from('services').select('*', { count: 'exact', head: true }).eq('business_id', business.id),
     supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('business_id', business.id),
+    supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', business.id)
+      .gte('start_time', startOfWeek.toISOString())
+      .lt('start_time', endOfWeek.toISOString()),
+    supabase
+      .from('bookings')
+      .select('id, customer_name, start_time, status, services(name), staff(name)')
+      .eq('business_id', business.id)
+      .order('created_at', { ascending: false })
+      .limit(5),
   ])
 
   const stats = [
     { label: 'Total Bookings', value: bookingCount ?? 0, icon: Calendar, sub: 'all time', bg: 'bg-ember-50', text: 'text-ember-600', border: 'border-t-ember-500' },
-    { label: 'This Week', value: 0, icon: TrendingUp, sub: 'coming soon', bg: 'bg-mint-50', text: 'text-mint-600', border: 'border-t-mint-500' },
+    { label: 'This Week', value: weekCount ?? 0, icon: TrendingUp, sub: 'Mon - Sun', bg: 'bg-mint-50', text: 'text-mint-600', border: 'border-t-mint-500' },
     { label: 'Active Staff', value: staffCount ?? 0, icon: Users, sub: 'team members', bg: 'bg-ink-50', text: 'text-ink-900', border: 'border-t-ink-900' },
-    { label: 'Revenue', value: '$0', icon: DollarSign, sub: 'deposits (soon)', bg: 'bg-gold-50', text: 'text-gold-600', border: 'border-t-gold-500' },
   ]
 
   const manage = [
@@ -30,6 +53,18 @@ export default async function DashboardPage() {
     { href: '/dashboard/services', label: 'Services', icon: Scissors, count: serviceCount ?? 0, desc: 'Pricing & duration', bg: 'bg-ink-50', text: 'text-ink-900' },
     { href: '/dashboard/availability', label: 'Availability', icon: Clock, count: 0, desc: 'Weekly schedules', bg: 'bg-gold-50', text: 'text-gold-600' },
   ] as const
+
+  function statusStyles(status: string) {
+    if (status === 'confirmed') return 'bg-mint-50 text-mint-600'
+    if (status === 'cancelled') return 'bg-stone-100 text-stone-500'
+    return 'bg-gold-50 text-gold-600'
+  }
+
+  function formatDateTime(iso: string) {
+    return new Date(iso).toLocaleString([], {
+      weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+    })
+  }
 
   return (
     <div className="space-y-8">
@@ -48,7 +83,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fadeInUp">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-fadeInUp">
         {stats.map((s) => (
           <div
             key={s.label}
@@ -64,6 +99,41 @@ export default async function DashboardPage() {
             <p className="text-xs text-stone-400 mt-1">{s.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* Recent Bookings */}
+      <div className="animate-fadeInUp">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-widest">Recent Bookings</h2>
+          <Link href="/dashboard/bookings" className="text-sm font-medium text-ember-600 hover:underline">
+            View all →
+          </Link>
+        </div>
+        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+          {!recentBookings || recentBookings.length === 0 ? (
+            <div className="p-8 text-center text-sm text-stone-400">No bookings yet</div>
+          ) : (
+            <table className="w-full text-sm">
+              <tbody>
+                {recentBookings.map((b: { id: string; customer_name: string; start_time: string; status: string; services: { name: string }[]; staff: { name: string }[] }) => (
+                  <tr key={b.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50 transition-colors">
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium text-stone-900">{b.customer_name}</p>
+                    </td>
+                    <td className="px-5 py-3.5 text-stone-600">{b.services?.[0]?.name}</td>
+                    <td className="px-5 py-3.5 text-stone-600">{b.staff?.[0]?.name}</td>
+                    <td className="px-5 py-3.5 text-stone-600">{formatDateTime(b.start_time)}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusStyles(b.status)}`}>
+                        {b.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       {/* Manage cards */}
