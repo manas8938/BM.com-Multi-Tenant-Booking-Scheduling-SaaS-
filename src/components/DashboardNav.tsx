@@ -9,6 +9,7 @@ import {
   Scissors,
   Clock,
   Calendar,
+  CreditCard,
 } from 'lucide-react'
 
 const NAV = [
@@ -18,6 +19,7 @@ const NAV = [
   { href: '/dashboard/services', label: 'Services', icon: Scissors, exact: false },
   { href: '/dashboard/availability', label: 'Availability', icon: Clock, exact: false },
   { href: '/dashboard/bookings', label: 'Bookings', icon: Calendar, exact: false },
+  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard, exact: false },
 ]
 
 export function DashboardNav() {
