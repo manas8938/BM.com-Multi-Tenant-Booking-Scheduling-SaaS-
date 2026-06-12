@@ -2,7 +2,7 @@
 // Client Component — manages multi-step wizard state with useState, like a controlled form in React you already know
 import { useState, useEffect } from 'react'
 import { Check, Clock, ChevronLeft, Loader2 } from 'lucide-react'
-import { fetchSlots, createBooking, type BookingResult } from '@/app/[businessSlug]/actions'
+import { fetchSlots, createBooking, createDepositCheckout, type BookingResult } from '@/app/[businessSlug]/actions'
 import type { TimeSlot } from '@/lib/slots'
 import { createClient } from '@/lib/supabase/client'
 
@@ -11,6 +11,7 @@ interface Service {
   name: string
   duration_minutes: number
   price_cents: number
+  deposit_cents: number
 }
 
 interface Staff {
@@ -22,10 +23,12 @@ type Step = 'service' | 'staff' | 'date' | 'slot' | 'details' | 'success'
 
 export function BookingFlow({
   businessId,
+  businessSlug,
   services,
   staff,
 }: {
   businessId: string
+  businessSlug: string
   services: Service[]
   staff: Staff[]
 }) {
@@ -99,6 +102,37 @@ export function BookingFlow({
     setSubmitting(true)
     setError(null)
 
+    // If this service requires a deposit, redirect to Stripe Checkout instead of
+    // creating the booking directly — booking is created on the /confirm page after payment.
+    if (service.deposit_cents > 0) {
+      const result = await createDepositCheckout({
+        businessId,
+        businessSlug,
+        staffId: member.id,
+        serviceId: service.id,
+        serviceName: service.name,
+        startTime: slot.start,
+        endTime: slot.end,
+        customerName: name,
+        customerEmail: email,
+        depositCents: service.deposit_cents,
+      })
+      // redirect() throws internally on success, so we only reach here on failure
+      if (result && !result.success) {
+        setSubmitting(false)
+        setError(result.error)
+        if (date) {
+          setLoadingSlots(true)
+          const fresh = await fetchSlots(member.id, service.id, date)
+          setSlots(fresh)
+          setLoadingSlots(false)
+        }
+        setSlot(null)
+        setStep('slot')
+      }
+      return
+    }
+
     const result: BookingResult = await createBooking({
       businessId,
       staffId: member.id,
@@ -132,21 +166,21 @@ export function BookingFlow({
   // ---- SUCCESS ----
   if (step === 'success') {
     return (
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-8 text-center animate-fadeInUp">
+      <div className="bg-white dark:bg-ink-800 rounded-xl border border-stone-200 dark:border-ink-700 shadow-sm p-8 text-center animate-fadeInUp">
         <div className="w-14 h-14 bg-mint-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <Check size={26} className="text-mint-600" />
         </div>
-        <h2 className="text-xl font-bold text-stone-900 mb-1">Booking confirmed</h2>
-        <p className="text-sm text-stone-500 mb-6">
+        <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-1">Booking confirmed</h2>
+        <p className="text-sm text-stone-500 dark:text-stone-400 mb-6">
           Save this confirmation for your records.
         </p>
-        <div className="bg-stone-50 rounded-lg p-4 text-left text-sm space-y-1.5">
-          <p><span className="text-stone-400">Service:</span> <span className="font-medium text-stone-900">{service?.name}</span></p>
-          <p><span className="text-stone-400">With:</span> <span className="font-medium text-stone-900">{member?.name}</span></p>
-          <p><span className="text-stone-400">When:</span> <span className="font-medium text-stone-900">{slot && new Date(slot.start).toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span></p>
+        <div className="bg-stone-50 dark:bg-ink-900 rounded-lg p-4 text-left text-sm space-y-1.5">
+          <p><span className="text-stone-400 dark:text-stone-500">Service:</span> <span className="font-medium text-stone-900 dark:text-white">{service?.name}</span></p>
+          <p><span className="text-stone-400 dark:text-stone-500">With:</span> <span className="font-medium text-stone-900 dark:text-white">{member?.name}</span></p>
+          <p><span className="text-stone-400 dark:text-stone-500">When:</span> <span className="font-medium text-stone-900 dark:text-white">{slot && new Date(slot.start).toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span></p>
         </div>
         {cancelToken && (
-          <a href={`/cancel/${cancelToken}`} className="inline-block mt-4 text-sm text-stone-400 hover:text-ember-600 underline underline-offset-2 transition-colors">
+          <a href={`/cancel/${cancelToken}`} className="inline-block mt-4 text-sm text-stone-400 dark:text-stone-500 hover:text-ember-600 dark:hover:text-ember-400 underline underline-offset-2 transition-colors">
             Need to cancel? Click here
           </a>
         )}
@@ -155,7 +189,7 @@ export function BookingFlow({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-6 animate-fadeInUp">
+    <div className="bg-white dark:bg-ink-800 rounded-xl border border-stone-200 dark:border-ink-700 shadow-sm p-6 animate-fadeInUp">
       {/* Progress / back */}
       {step !== 'service' && (
         <button
@@ -165,7 +199,7 @@ export function BookingFlow({
             else if (step === 'slot') setStep('date')
             else if (step === 'details') setStep('slot')
           }}
-          className="flex items-center gap-1 text-sm text-stone-500 hover:text-ember-600 mb-4 transition-colors"
+          className="flex items-center gap-1 text-sm text-stone-500 dark:text-stone-400 hover:text-ember-600 dark:hover:text-ember-400 mb-4 transition-colors"
         >
           <ChevronLeft size={16} />
           Back
@@ -173,7 +207,7 @@ export function BookingFlow({
       )}
 
       {error && step !== 'slot' && (
-        <div className="bg-ember-50 border border-ember-200 text-ember-700 text-sm rounded-lg p-3 mb-4">
+        <div className="bg-ember-50 dark:bg-ember-500/10 border border-ember-200 dark:border-ember-500/30 text-ember-700 dark:text-ember-400 text-sm rounded-lg p-3 mb-4">
           {error}
         </div>
       )}
@@ -181,26 +215,31 @@ export function BookingFlow({
       {/* STEP: service */}
       {step === 'service' && (
         <div>
-          <h2 className="font-semibold text-stone-900 mb-1">Choose a service</h2>
-          <p className="text-sm text-stone-500 mb-4">Select what you&apos;d like to book</p>
+          <h2 className="font-semibold text-stone-900 dark:text-white mb-1">Choose a service</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">Select what you&apos;d like to book</p>
           <div className="space-y-2">
             {services.map((s) => (
               <button
                 key={s.id}
                 onClick={() => { setService(s); setStep('staff') }}
-                className="w-full flex items-center justify-between p-4 rounded-lg border border-stone-200 hover:border-ember-300 hover:bg-ember-50/40 transition-colors text-left"
+                className="w-full flex items-center justify-between p-4 rounded-lg border border-stone-200 dark:border-ink-700 hover:border-ember-300 dark:hover:border-ember-500 hover:bg-ember-50/40 dark:hover:bg-ember-500/10 transition-colors text-left"
               >
                 <div>
-                  <p className="font-medium text-stone-900">{s.name}</p>
-                  <p className="text-xs text-stone-400 flex items-center gap-1 mt-0.5">
+                  <p className="font-medium text-stone-900 dark:text-white">{s.name}</p>
+                  <p className="text-xs text-stone-400 dark:text-stone-500 flex items-center gap-1 mt-0.5">
                     <Clock size={12} /> {s.duration_minutes} min
                   </p>
                 </div>
-                <span className="font-semibold text-ember-600">{formatPrice(s.price_cents)}</span>
+                <div className="text-right">
+                  <span className="font-semibold text-ember-600 dark:text-ember-400">{formatPrice(s.price_cents)}</span>
+                  {s.deposit_cents > 0 && (
+                    <p className="text-xs text-mint-600 dark:text-mint-400 mt-0.5">{formatPrice(s.deposit_cents)} deposit required</p>
+                  )}
+                </div>
               </button>
             ))}
             {services.length === 0 && (
-              <p className="text-sm text-stone-400 text-center py-8">No services available yet.</p>
+              <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No services available yet.</p>
             )}
           </div>
         </div>
@@ -209,23 +248,23 @@ export function BookingFlow({
       {/* STEP: staff */}
       {step === 'staff' && (
         <div>
-          <h2 className="font-semibold text-stone-900 mb-1">Choose staff</h2>
-          <p className="text-sm text-stone-500 mb-4">Who would you like to see?</p>
+          <h2 className="font-semibold text-stone-900 dark:text-white mb-1">Choose staff</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">Who would you like to see?</p>
           <div className="space-y-2">
             {staff.map((m) => (
               <button
                 key={m.id}
                 onClick={() => { setMember(m); setStep('date') }}
-                className="w-full flex items-center gap-3 p-4 rounded-lg border border-stone-200 hover:border-ember-300 hover:bg-ember-50/40 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-4 rounded-lg border border-stone-200 dark:border-ink-700 hover:border-ember-300 dark:hover:border-ember-500 hover:bg-ember-50/40 dark:hover:bg-ember-500/10 transition-colors text-left"
               >
-                <div className="w-9 h-9 bg-ink-50 rounded-full flex items-center justify-center font-semibold text-ink-900 text-sm">
+                <div className="w-9 h-9 bg-ink-50 dark:bg-ink-700 rounded-full flex items-center justify-center font-semibold text-ink-900 dark:text-white text-sm">
                   {m.name.charAt(0).toUpperCase()}
                 </div>
-                <p className="font-medium text-stone-900">{m.name}</p>
+                <p className="font-medium text-stone-900 dark:text-white">{m.name}</p>
               </button>
             ))}
             {staff.length === 0 && (
-              <p className="text-sm text-stone-400 text-center py-8">No staff available yet.</p>
+              <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No staff available yet.</p>
             )}
           </div>
         </div>
@@ -234,8 +273,8 @@ export function BookingFlow({
       {/* STEP: date */}
       {step === 'date' && (
         <div>
-          <h2 className="font-semibold text-stone-900 mb-1">Choose a date</h2>
-          <p className="text-sm text-stone-500 mb-4">Pick a day in the next week</p>
+          <h2 className="font-semibold text-stone-900 dark:text-white mb-1">Choose a date</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">Pick a day in the next week</p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {next7Days.map((d) => {
               const iso = d.toISOString().split('T')[0]
@@ -243,10 +282,10 @@ export function BookingFlow({
                 <button
                   key={iso}
                   onClick={() => { setDate(iso); setStep('slot') }}
-                  className="flex flex-col items-center p-3 rounded-lg border border-stone-200 hover:border-ember-300 hover:bg-ember-50/40 transition-colors"
+                  className="flex flex-col items-center p-3 rounded-lg border border-stone-200 dark:border-ink-700 hover:border-ember-300 dark:hover:border-ember-500 hover:bg-ember-50/40 dark:hover:bg-ember-500/10 transition-colors"
                 >
-                  <span className="text-xs text-stone-400 uppercase">{d.toLocaleDateString([], { weekday: 'short' })}</span>
-                  <span className="font-semibold text-stone-900 mt-0.5">{d.getDate()}</span>
+                  <span className="text-xs text-stone-400 dark:text-stone-500 uppercase">{d.toLocaleDateString([], { weekday: 'short' })}</span>
+                  <span className="font-semibold text-stone-900 dark:text-white mt-0.5">{d.getDate()}</span>
                 </button>
               )
             })}
@@ -257,13 +296,13 @@ export function BookingFlow({
       {/* STEP: slot */}
       {step === 'slot' && (
         <div>
-          <h2 className="font-semibold text-stone-900 mb-1">Choose a time</h2>
-          <p className="text-sm text-stone-500 mb-4">
+          <h2 className="font-semibold text-stone-900 dark:text-white mb-1">Choose a time</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
             {date && new Date(`${date}T00:00:00`).toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
 
           {error && (
-            <div className="bg-ember-50 border border-ember-200 text-ember-700 text-sm rounded-lg p-3 mb-4">
+            <div className="bg-ember-50 dark:bg-ember-500/10 border border-ember-200 dark:border-ember-500/30 text-ember-700 dark:text-ember-400 text-sm rounded-lg p-3 mb-4">
               {error}
             </div>
           )}
@@ -275,7 +314,7 @@ export function BookingFlow({
           )}
 
           {!loadingSlots && slots.length === 0 && (
-            <p className="text-sm text-stone-400 text-center py-8">No available slots on this day. Try another date.</p>
+            <p className="text-sm text-stone-400 dark:text-stone-500 text-center py-8">No available slots on this day. Try another date.</p>
           )}
 
           {!loadingSlots && slots.length > 0 && (
@@ -284,7 +323,7 @@ export function BookingFlow({
                 <button
                   key={s.start}
                   onClick={() => { setSlot(s); setError(null); setStep('details') }}
-                  className="p-3 rounded-lg border border-stone-200 hover:border-ember-300 hover:bg-ember-50/40 transition-colors font-medium text-sm text-stone-900"
+                  className="p-3 rounded-lg border border-stone-200 dark:border-ink-700 hover:border-ember-300 dark:hover:border-ember-500 hover:bg-ember-50/40 dark:hover:bg-ember-500/10 transition-colors font-medium text-sm text-stone-900 dark:text-white"
                 >
                   {formatTime(s.start)}
                 </button>
@@ -297,31 +336,31 @@ export function BookingFlow({
       {/* STEP: details */}
       {step === 'details' && (
         <div>
-          <h2 className="font-semibold text-stone-900 mb-1">Your details</h2>
-          <p className="text-sm text-stone-500 mb-4">
+          <h2 className="font-semibold text-stone-900 dark:text-white mb-1">Your details</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
             {service?.name} with {member?.name}
             {slot && ` — ${new Date(slot.start).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`}
           </p>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Full name</label>
+              <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">Full name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="w-full border border-stone-300 rounded-lg px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-ember-500 focus:ring-2 focus:ring-ember-500/20 outline-none"
+                className="w-full bg-white dark:bg-ink-900 border border-stone-300 dark:border-ink-600 rounded-lg px-3.5 py-2.5 text-sm text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-ember-500 focus:ring-2 focus:ring-ember-500/20 outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full border border-stone-300 rounded-lg px-3.5 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-ember-500 focus:ring-2 focus:ring-ember-500/20 outline-none"
+                className="w-full bg-white dark:bg-ink-900 border border-stone-300 dark:border-ink-600 rounded-lg px-3.5 py-2.5 text-sm text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-ember-500 focus:ring-2 focus:ring-ember-500/20 outline-none"
               />
             </div>
             <button
@@ -330,7 +369,9 @@ export function BookingFlow({
               className="w-full bg-ember-600 hover:bg-ember-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium px-4 py-2.5 rounded-lg shadow-sm transition-all flex items-center justify-center gap-2"
             >
               {submitting && <Loader2 size={16} className="animate-spin" />}
-              Confirm booking
+              {service && service.deposit_cents > 0
+                ? `Pay ${formatPrice(service.deposit_cents)} deposit & book`
+                : 'Confirm booking'}
             </button>
           </div>
         </div>

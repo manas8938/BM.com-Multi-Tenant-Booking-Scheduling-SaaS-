@@ -41,11 +41,19 @@ export async function updateStaff(formData: FormData) {
 export async function deleteStaff(formData: FormData) {
   const { supabase, business } = await requireBusiness()
 
-  await supabase
+  const { error } = await supabase
     .from('staff')
     .delete()
     .eq('id', formData.get('id') as string)
     .eq('business_id', business.id)
+
+  if (error) {
+    console.error('deleteStaff error:', error)
+    const message = error.code === '23503'
+      ? 'This staff member has existing bookings and cannot be removed. Cancel or reassign their bookings first.'
+      : error.message
+    redirect(PATH + '?error=' + encodeURIComponent(message))
+  }
 
   revalidatePath(PATH)
 }

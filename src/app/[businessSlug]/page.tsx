@@ -17,7 +17,7 @@ export default async function PublicBookingPage({
   const [{ data: services }, { data: staff }] = await Promise.all([
     supabase
       .from('services')
-      .select('id, name, duration_minutes, price_cents')
+      .select('id, name, duration_minutes, price_cents, deposit_cents')
       .eq('business_id', business.id)
       .order('name'),
     supabase
@@ -27,8 +27,8 @@ export default async function PublicBookingPage({
       .order('name'),
   ])
   return (
-    <div className="min-h-screen bg-stone-50">
-      <header className="bg-white border-b border-stone-200 shadow-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-stone-50 dark:bg-ink-950">
+      <header className="bg-white dark:bg-ink-900 border-b border-stone-200 dark:border-ink-700 shadow-sm sticky top-0 z-10">
         <div className="px-6 h-16 flex items-center justify-between">
           {/* Business identity — logo + name */}
           <div className="flex items-center gap-2.5">
@@ -38,11 +38,11 @@ export default async function PublicBookingPage({
                 <path d="M5 2v3M11 2v3M2 7h12" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
-            <p className="font-semibold text-stone-900 text-base leading-tight">{business.name}</p>
+            <p className="font-semibold text-stone-900 dark:text-white text-base leading-tight">{business.name}</p>
           </div>
           {/* "Powered by" badge — mirrors dashboard's BookFlow wordmark placement */}
-          <span className="text-xs text-stone-400 font-medium tracking-wide">
-            Powered by <span className="text-stone-500 font-semibold">BookFlow</span>
+          <span className="text-xs text-stone-400 dark:text-stone-500 font-medium tracking-wide">
+            Powered by <span className="text-stone-500 dark:text-stone-400 font-semibold">BookFlow</span>
           </span>
         </div>
       </header>
@@ -50,6 +50,7 @@ export default async function PublicBookingPage({
       <main className="max-w-2xl mx-auto px-6 py-8">
         <BookingFlow
           businessId={business.id}
+          businessSlug={business.slug}
           services={services ?? []}
           staff={staff ?? []}
         />

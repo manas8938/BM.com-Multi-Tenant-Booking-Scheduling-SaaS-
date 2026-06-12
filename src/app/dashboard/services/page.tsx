@@ -72,7 +72,7 @@ export default async function ServicesPage({
               <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">Service name</label>
               <input name="name" type="text" required placeholder="Haircut & Style" defaultValue={editItem?.name ?? ''} className={INPUT} />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
                   Duration <span className="text-stone-400 dark:text-stone-500 font-normal">(minutes)</span>
@@ -85,6 +85,12 @@ export default async function ServicesPage({
                 </label>
                 {/* Input in dollars; actions.ts multiplies ×100 to store as cents */}
                 <input name="price" type="number" required min="0" step="0.01" placeholder="25.00" defaultValue={editItem ? (editItem.price_cents / 100).toFixed(2) : ''} className={INPUT} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
+                  Deposit <span className="text-stone-400 dark:text-stone-500 font-normal">(USD, optional)</span>
+                </label>
+                <input name="deposit" type="number" min="0" step="0.01" placeholder="0.00" defaultValue={editItem && editItem.deposit_cents > 0 ? (editItem.deposit_cents / 100).toFixed(2) : ""} className={INPUT} />
               </div>
             </div>
             <div className="flex items-center gap-3 pt-2">
@@ -125,7 +131,12 @@ export default async function ServicesPage({
                 <tr key={service.id} className="hover:bg-stone-50/60 dark:hover:bg-white/5 transition-colors">
                   <td className="px-5 py-3.5 font-medium text-stone-900 dark:text-white">{service.name}</td>
                   <td className="px-5 py-3.5 text-stone-500 dark:text-stone-400">{formatDuration(service.duration_minutes)}</td>
-                  <td className="px-5 py-3.5 font-semibold text-stone-900 dark:text-white">{formatPrice(service.price_cents)}</td>
+                  <td className="px-5 py-3.5">
+                    <p className="font-semibold text-stone-900 dark:text-white">{formatPrice(service.price_cents)}</p>
+                    {service.deposit_cents > 0 && (
+                      <p className="text-xs text-mint-600 dark:text-mint-400 mt-0.5">{formatPrice(service.deposit_cents)} deposit</p>
+                    )}
+                  </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1">
                       <Link href={`?edit=${service.id}`} className="p-1.5 rounded-lg text-stone-400 dark:text-stone-500 hover:text-ember-600 hover:bg-ember-50 dark:hover:bg-ember-500/20 transition-colors" title="Edit">

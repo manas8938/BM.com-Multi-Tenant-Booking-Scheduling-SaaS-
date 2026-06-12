@@ -1,4 +1,5 @@
 'use server'
+
 import { requireBusiness } from '@/lib/supabase/server-utils'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -8,14 +9,16 @@ const PATH = '/dashboard/services'
 export async function createService(formData: FormData) {
   const { supabase, business } = await requireBusiness()
 
-  // Price input is in dollars (e.g. "25.00") — store as cents to avoid float precision issues
+  // Price/deposit inputs are in dollars (e.g. "25.00") — store as cents to avoid float precision issues
   const priceCents = Math.round(parseFloat(formData.get('price') as string || '0') * 100)
+  const depositCents = Math.round(parseFloat(formData.get('deposit') as string || '0') * 100)
 
   const { error } = await supabase.from('services').insert({
     business_id: business.id,
     name: (formData.get('name') as string).trim(),
     duration_minutes: parseInt(formData.get('duration_minutes') as string),
     price_cents: priceCents,
+    deposit_cents: depositCents,
   })
 
   if (error) redirect(PATH + '?error=' + encodeURIComponent(error.message))
@@ -27,6 +30,7 @@ export async function updateService(formData: FormData) {
   const { supabase, business } = await requireBusiness()
 
   const priceCents = Math.round(parseFloat(formData.get('price') as string || '0') * 100)
+  const depositCents = Math.round(parseFloat(formData.get('deposit') as string || '0') * 100)
 
   const { error } = await supabase
     .from('services')
@@ -34,6 +38,7 @@ export async function updateService(formData: FormData) {
       name: (formData.get('name') as string).trim(),
       duration_minutes: parseInt(formData.get('duration_minutes') as string),
       price_cents: priceCents,
+      deposit_cents: depositCents,
     })
     .eq('id', formData.get('id') as string)
     .eq('business_id', business.id)
@@ -45,12 +50,10 @@ export async function updateService(formData: FormData) {
 
 export async function deleteService(formData: FormData) {
   const { supabase, business } = await requireBusiness()
-
   await supabase
     .from('services')
     .delete()
     .eq('id', formData.get('id') as string)
     .eq('business_id', business.id)
-
   revalidatePath(PATH)
 }
