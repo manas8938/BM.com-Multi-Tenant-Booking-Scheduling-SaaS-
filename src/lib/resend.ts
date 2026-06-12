@@ -45,3 +45,33 @@ export function bookingConfirmationEmail(opts: {
     </div>
   `
 }
+
+export function staffWelcomeEmail(opts: {
+  staffName: string
+  businessName: string
+  bookingUrl: string
+}) {
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 32px;">
+        <div style="width: 32px; height: 32px; background: #ea580c; border-radius: 8px; display: inline-block;"></div>
+        <span style="font-weight: 700; font-size: 16px; color: #1c1917;">${opts.businessName}</span>
+      </div>
+
+      <h1 style="font-size: 20px; font-weight: 700; color: #1c1917; margin: 0 0 8px;">Welcome to the team, ${opts.staffName}!</h1>
+      <p style="font-size: 14px; color: #78716c; margin: 0 0 24px; line-height: 1.6;">
+        You've been added as a staff member at <strong>${opts.businessName}</strong>.
+        Customers can now book appointments with you through the link below.
+      </p>
+
+      <div style="background: #fafaf9; border-radius: 12px; padding: 16px; text-align: center;">
+        <p style="font-size: 13px; color: #a8a29e; margin: 0 0 8px;">Public booking page</p>
+        <a href="${opts.bookingUrl}" style="color: #ea580c; font-weight: 600; font-size: 14px; text-decoration: underline; word-break: break-all;">${opts.bookingUrl}</a>
+      </div>
+
+      <p style="font-size: 13px; color: #a8a29e; margin: 24px 0 0;">
+        Powered by BM.com — booking & scheduling for modern businesses.
+      </p>
+    </div>
+  `
+}
