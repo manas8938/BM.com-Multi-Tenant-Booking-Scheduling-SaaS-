@@ -16,7 +16,7 @@ export default function SignupPage({
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
           {/* Brand */}
           <div className="flex items-center gap-2.5 mb-8">
-            <div className="w-8 h-8 bg-stone-900 rounded-lg flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 bg-ember-600 rounded-lg flex items-center justify-center shrink-0">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <rect x="2" y="4" width="12" height="10" rx="1.5" stroke="white" strokeWidth="1.5"/>
                 <path d="M5 2v3M11 2v3M2 7h12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>

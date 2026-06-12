@@ -59,14 +59,14 @@ export default async function BookingsPage() {
               </tr>
             </thead>
             <tbody>
-              {bookings.map((b: any) => (
+              {bookings.map((b: { id: string; customer_name: string; customer_email: string; start_time: string; status: string; services: { name: string }[]; staff: { name: string }[] }) => (
                 <tr key={b.id} className="border-t border-stone-100 hover:bg-stone-50 transition-colors">
                   <td className="px-5 py-3.5">
                     <p className="font-medium text-stone-900">{b.customer_name}</p>
                     <p className="text-xs text-stone-400">{b.customer_email}</p>
                   </td>
-                  <td className="px-5 py-3.5 text-stone-700">{b.services?.name}</td>
-                  <td className="px-5 py-3.5 text-stone-700">{b.staff?.name}</td>
+                  <td className="px-5 py-3.5 text-stone-700">{b.services?.[0]?.name}</td>
+                  <td className="px-5 py-3.5 text-stone-700">{b.staff?.[0]?.name}</td>
                   <td className="px-5 py-3.5 text-stone-700">{formatDateTime(b.start_time)}</td>
                   <td className="px-5 py-3.5">
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusStyles(b.status)}`}>

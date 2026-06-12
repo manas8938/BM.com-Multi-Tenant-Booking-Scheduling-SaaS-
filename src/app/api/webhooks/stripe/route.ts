@@ -12,8 +12,9 @@ export async function POST(req: Request) {
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    return NextResponse.json({ error: message }, { status: 400 })
   }
 
   // service role client — webhooks have no user session, must bypass RLS

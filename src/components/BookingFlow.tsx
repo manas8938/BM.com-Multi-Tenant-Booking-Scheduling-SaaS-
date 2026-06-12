@@ -175,7 +175,7 @@ export function BookingFlow({
       {step === 'service' && (
         <div>
           <h2 className="font-semibold text-stone-900 mb-1">Choose a service</h2>
-          <p className="text-sm text-stone-500 mb-4">Select what you'd like to book</p>
+          <p className="text-sm text-stone-500 mb-4">Select what you&apos;d like to book</p>
           <div className="space-y-2">
             {services.map((s) => (
               <button

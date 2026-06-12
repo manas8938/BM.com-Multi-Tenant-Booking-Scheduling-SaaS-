@@ -9,7 +9,7 @@ export default function OnboardingPage({
     <div className="min-h-screen flex items-center justify-center bg-stone-50">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
         <div className="mb-8">
-          <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center mb-4">
+          <div className="w-10 h-10 bg-ember-600 rounded-xl flex items-center justify-center mb-4">
             <span className="text-white font-bold text-lg">B</span>
           </div>
           <h1 className="text-2xl font-bold text-stone-900">Set up your business</h1>
