@@ -22,13 +22,13 @@ export function PasswordInput({ name, placeholder, minLength, autoComplete }: Pa
         minLength={minLength}
         autoComplete={autoComplete}
         placeholder={placeholder}
-        className="w-full px-4 py-3 pr-11 border border-stone-200 dark:border-ink-700 rounded-xl text-sm text-stone-900 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 bg-white dark:bg-ink-900 focus:outline-none focus:ring-2 focus:ring-ember-500/30 focus:border-ember-500 transition-colors"
+        className="w-full px-4 py-3 pr-11 border border-ink-700 rounded-xl text-sm text-white placeholder:text-stone-500 bg-ink-900 focus:outline-none focus:ring-2 focus:ring-ember-500/30 focus:border-ember-500 transition-colors"
       />
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
         tabIndex={-1}
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 transition-colors rounded"
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-500 hover:text-stone-300 transition-colors rounded"
         aria-label={show ? 'Hide password' : 'Show password'}
       >
         {/* Eye = visible (click to hide), EyeOff = hidden (click to show) */}
