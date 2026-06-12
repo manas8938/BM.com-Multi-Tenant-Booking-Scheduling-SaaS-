@@ -38,7 +38,7 @@ export default async function ConfirmPage({
           <div className="w-8 h-8 bg-ember-600 rounded-lg flex items-center justify-center shrink-0">
             <Calendar size={16} className="text-white" strokeWidth={2} />
           </div>
-          <span className="font-bold text-stone-900 tracking-tight">{business?.name ?? 'BookFlow'}</span>
+          <span className="font-bold text-stone-900 tracking-tight">{business?.name ?? 'BM.com'}</span>
         </div>
 
         {result.success ? (

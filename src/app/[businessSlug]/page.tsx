@@ -40,9 +40,9 @@ export default async function PublicBookingPage({
             </div>
             <p className="font-semibold text-stone-900 dark:text-white text-base leading-tight">{business.name}</p>
           </div>
-          {/* "Powered by" badge — mirrors dashboard's BookFlow wordmark placement */}
+          {/* "Powered by" badge — mirrors dashboard's BM.com wordmark placement */}
           <span className="text-xs text-stone-400 dark:text-stone-500 font-medium tracking-wide">
-            Powered by <span className="text-stone-500 dark:text-stone-400 font-semibold">BookFlow</span>
+            Powered by <span className="text-stone-500 dark:text-stone-400 font-semibold">BM.com</span>
           </span>
         </div>
       </header>

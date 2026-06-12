@@ -29,7 +29,7 @@ export default async function CancelPage({
           <div className="w-8 h-8 bg-ember-600 rounded-lg flex items-center justify-center shrink-0">
             <Calendar size={16} className="text-white" strokeWidth={2} />
           </div>
-          <span className="font-bold text-stone-900 tracking-tight">BookFlow</span>
+          <span className="font-bold text-stone-900 tracking-tight">BM.com</span>
         </div>
 
         {!booking ? (

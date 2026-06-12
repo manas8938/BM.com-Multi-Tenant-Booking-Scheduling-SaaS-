@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getAvailableSlots, type TimeSlot } from '@/lib/slots'
 import { stripe } from '@/lib/stripe'
 import { redirect } from 'next/navigation'
+import { resend, EMAIL_FROM, bookingConfirmationEmail } from '@/lib/resend'
 
 export async function fetchSlots(
   staffId: string,
@@ -27,6 +28,53 @@ async function checkSlotTaken(staffId: string, startTime: string) {
     .neq('status', 'cancelled')
     .maybeSingle()
   return !!existing
+}
+
+
+// Fires off a booking confirmation email — best-effort, never blocks the booking flow on failure
+async function sendBookingEmail(bookingId: string) {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('bookings')
+      .select(`
+        start_time,
+        customer_email,
+        customer_name,
+        cancel_token,
+        deposit_paid,
+        deposit_cents,
+        businesses ( name, slug ),
+        services ( name ),
+        staff ( name )
+      `)
+      .eq('id', bookingId)
+      .single()
+
+    if (!data) return
+
+    const business = Array.isArray(data.businesses) ? data.businesses[0] : data.businesses
+    const service = Array.isArray(data.services) ? data.services[0] : data.services
+    const staff = Array.isArray(data.staff) ? data.staff[0] : data.staff
+    if (!business || !service || !staff) return
+
+    await resend.emails.send({
+      from: EMAIL_FROM,
+      to: data.customer_email,
+      subject: `Booking confirmed — ${business.name}`,
+      html: bookingConfirmationEmail({
+        businessName: business.name,
+        serviceName: service.name,
+        staffName: staff.name,
+        startTime: data.start_time,
+        cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/cancel/${data.cancel_token}`,
+        depositPaid: data.deposit_paid,
+        depositCents: data.deposit_cents,
+      }),
+    })
+  } catch (err) {
+    console.error('sendBookingEmail error:', err)
+  }
 }
 
 export async function createBooking(input: {
@@ -68,6 +116,8 @@ export async function createBooking(input: {
     }
     return { success: false, error: 'Something went wrong. Please try again.' }
   }
+
+  await sendBookingEmail(data.id)
 
   return { success: true, bookingId: data.id, cancelToken: data.cancel_token }
 }
@@ -170,6 +220,8 @@ export async function confirmDepositBooking(sessionId: string): Promise<BookingR
   if (error) {
     return { success: false, error: 'Payment succeeded but booking could not be created. Please contact the business.' }
   }
+
+  await sendBookingEmail(data.id)
 
   return { success: true, bookingId: data.id, cancelToken: data.cancel_token }
 }

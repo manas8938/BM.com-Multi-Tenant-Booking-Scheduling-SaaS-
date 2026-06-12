@@ -29,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <div className="w-8 h-8 bg-ember-600 rounded-lg flex items-center justify-center shrink-0">
                 <Calendar size={16} className="text-white" strokeWidth={2} />
               </div>
-              <span className="font-semibold text-base text-stone-900 dark:text-white tracking-tight">BookFlow</span>
+              <span className="font-semibold text-base text-stone-900 dark:text-white tracking-tight">BM.com</span>
             </div>
             {/* Divider */}
             <div className="h-6 w-px bg-stone-200 dark:bg-ink-700 shrink-0" />

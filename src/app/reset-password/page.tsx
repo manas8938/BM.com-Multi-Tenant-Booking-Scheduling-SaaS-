@@ -20,7 +20,7 @@ export default function ResetPasswordPage({
                 <path d="M5 2v3M11 2v3M2 7h12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </div>
-            <span className="font-bold text-stone-900 tracking-tight">BookFlow</span>
+            <span className="font-bold text-stone-900 tracking-tight">BM.com</span>
           </div>
 
           <div className="mb-6">
